@@ -1,13 +1,5 @@
 package main
 
-import "fmt"
-
-func main() {
-	fmt.Println(rotate1([]int{1, 2, 3, 4, 5}, 2))
-	fmt.Println(removeAdjDup([]string{"a", "a", "b", "c", "d"}))
-	fmt.Println(removeAdjDup([]string{"a", "a", "b", "c", "c", "d", "e", "e", "e", "f"}))
-}
-
 func removeAdjDup(slice []string) []string {
 	for i := 1; i < len(slice); i++ {
 		if slice[i] == slice[i-1] {
