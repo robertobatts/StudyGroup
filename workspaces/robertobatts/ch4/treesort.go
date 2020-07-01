@@ -1,11 +1,5 @@
 package main
 
-import "fmt"
-
-func main() {
-	fmt.Println(Sort([]int{1, 2, 3, 5, 4, 7, 0, -3, 2, 11, 9, 8, 6, 5}))
-}
-
 type Tree struct {
 	Value       int
 	Left, Right *Tree
