@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"golang.org/x/net/html"
 )
@@ -15,6 +16,40 @@ func run() {
 	}
 	fmt.Println(visit(nil, doc))
 	outline(nil, doc)
+	fmt.Println(countWords(doc))
+	forEachNode(doc, startElement, endElement)
+}
+
+var depth int
+
+func startElement(n *html.Node) {
+	if n.Type == html.ElementNode {
+		fmt.Printf("%*s<%s", depth*2, "", n.Data)
+		for _, attr := range n.Attr {
+			fmt.Printf(" %s='%s'", attr.Key, attr.Val)
+		}
+		fmt.Println(">")
+		depth++
+	}
+}
+
+func endElement(n *html.Node) {
+	if n.Type == html.ElementNode {
+		depth--
+		fmt.Printf("%*s</%s>\n", depth*2, "", n.Data)
+	}
+}
+
+func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
+	if pre != nil {
+		pre(n)
+	}
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		forEachNode(c, pre, post)
+	}
+	if post != nil {
+		post(n)
+	}
 }
 
 func outline(stack []string, n *html.Node) {
@@ -44,6 +79,9 @@ func getHTMLFromURL(url string) (*html.Node, error) {
 }
 
 func visit(links []string, n *html.Node) []string {
+	if n == nil {
+		return links
+	}
 	if n.Type == html.ElementNode && n.Data == "a" {
 		for _, a := range n.Attr {
 			if a.Key == "href" {
@@ -51,8 +89,21 @@ func visit(links []string, n *html.Node) []string {
 			}
 		}
 	}
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		links = visit(links, c)
-	}
+	links = visit(links, n.FirstChild)
+	links = visit(links, n.NextSibling)
 	return links
+}
+
+func countWords(n *html.Node) int {
+	nWords := 0
+	if n == nil {
+		return nWords
+	}
+	if n.Type == html.TextNode {
+		words := strings.Split(n.Data, " ")
+		nWords = len(words)
+	}
+	nWords += countWords(n.FirstChild)
+	nWords += countWords(n.NextSibling)
+	return nWords
 }
